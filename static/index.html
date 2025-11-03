@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>CRUD de Productos Futurista Animado</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        padding: 20px;
+        overflow-x: hidden;
+        position: relative;
+        background: #0d0d2b;
+        color: #fff;
+    }
+
+    /* ===== Fondo animado con ondas ===== */
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0; left: 0;
+        width: 200%; height: 200%;
+        background: radial-gradient(circle at 20% 20%, #00c6ff55, transparent 30%),
+                    radial-gradient(circle at 80% 80%, #7f00ff55, transparent 30%);
+        background-size: 50% 50%;
+        z-index: -1;
+        animation: waveAnim 20s linear infinite;
+    }
+
+    @keyframes waveAnim {
+        0% { transform: translate(0,0) rotate(0deg); }
+        25% { transform: translate(-10%,10%) rotate(45deg); }
+        50% { transform: translate(10%,-10%) rotate(90deg); }
+        75% { transform: translate(-10%,10%) rotate(135deg); }
+        100% { transform: translate(0,0) rotate(360deg); }
+    }
+
+    h1 { text-align: center; margin-bottom: 20px; font-size: 2.2rem; text-shadow: 2px 2px 15px rgba(0,0,0,0.3); animation: slideDown 1s ease; }
+    h2 { margin-bottom: 10px; text-shadow: 1px 1px 10px rgba(0,0,0,0.2); animation: fadeIn 1.5s ease; }
+
+    .form-container {
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        transform: translateY(-20px);
+        animation: dropIn 0.8s forwards;
+    }
+
+    .form-container input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-container input:focus { border-color: #00f0ff; transform: scale(1.02); outline: none; }
+
+    .btn-crear, .btn-eliminar {
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        transition: all 0.4s ease;
+    }
+
+    .btn-crear { background: linear-gradient(90deg, #00c6ff, #0072ff); color: #fff; }
+    .btn-crear:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+
+    .btn-eliminar { background: linear-gradient(90deg, #ff416c, #ff4b2b); color: #fff; }
+    .btn-eliminar:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+
+    #productos-lista {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(8px);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        animation: fadeIn 2s ease;
+    }
+
+    #productos-lista th, #productos-lista td { padding: 12px 15px; color: #fff; }
+    #productos-lista th { background: linear-gradient(90deg, #7f00ff, #00c6ff); text-transform: uppercase; letter-spacing: 1px; }
+    #productos-lista tbody tr { transition: all 0.3s ease; }
+    #productos-lista tbody tr:hover { background: rgba(255,255,255,0.2); transform: scale(1.02); }
+
+    @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes dropIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    #busqueda {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        border: 1px solid #00c6ff;
+        font-size: 15px;
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+    }
+    #busqueda::placeholder { color: #e0e0ff; }
+    #busqueda:focus { outline: none; transform: scale(1.02); border-color: #ff00ff; }
+
+</style>
+</head>
+<body>
+
+<h1>CRUD de Productos Futurista Animado</h1>
+
+<div class="form-container">
+    <h2>Crear Nuevo Producto</h2>
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="text" id="descripcion" placeholder="Descripción">
+    <input type="number" id="precio" placeholder="Precio" required>
+    <input type="text" id="categoria" placeholder="Categoría">
+    <button class="btn-crear" onclick="crearProducto()">Crear Producto</button>
+    <p id="mensaje-creacion"></p>
+</div>
+
+<h2>Lista de Productos</h2>
+<input type="text" id="busqueda" placeholder="Buscar por ID, nombre, descripción o categoría">
+<button class="btn-crear" onclick="obtenerProductos()">Actualizar / Cargar Lista</button>
+
+<table id="productos-lista">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="productos-cuerpo"></tbody>
+</table>
+
+<script>
+    const API_URL = 'http://127.0.0.1:8000/productos/';
+
+    async function obtenerProductos() {
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            const productos = await response.json();
+            const cuerpoTabla = document.getElementById('productos-cuerpo');
+            cuerpoTabla.innerHTML = '';
+            productos.forEach(producto => {
+                const fila = cuerpoTabla.insertRow();
+                fila.insertCell().textContent = producto.id;
+                fila.insertCell().textContent = producto.nombre;
+                fila.insertCell().textContent = producto.precio.toFixed(2);
+                fila.insertCell().textContent = producto.categoria || 'Sin Cat.';
+                const celdaAcciones = fila.insertCell();
+                const btnEliminar = document.createElement('button');
+                btnEliminar.textContent = 'Eliminar';
+                btnEliminar.className = 'btn-eliminar';
+                btnEliminar.onclick = () => eliminarProducto(producto.id);
+                celdaAcciones.appendChild(btnEliminar);
+            });
+        } catch (error) {
+            console.error('Error al obtener productos:', error);
+            document.getElementById('productos-cuerpo').innerHTML =
+                '<tr><td colspan="5">Error al cargar. Verifique que la API esté encendida.</td></tr>';
+        }
+    }
+
+    async function crearProducto() {
+        const nombre = document.getElementById('nombre').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const precio = parseFloat(document.getElementById('precio').value);
+        const categoria = document.getElementById('categoria').value;
+        const mensajeDiv = document.getElementById('mensaje-creacion');
+        if (!nombre || isNaN(precio)) {
+            mensajeDiv.textContent = 'Nombre y Precio son obligatorios.';
+            return;
+        }
+        const nuevoProducto = { nombre, descripcion, precio, categoria: categoria || null };
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoProducto)
+            });
+            if (response.status === 201) {
+                mensajeDiv.textContent = `Producto '${nombre}' creado con éxito.`;
+                document.getElementById('nombre').value = '';
+                document.getElementById('descripcion').value = '';
+                document.getElementById('precio').value = '';
+                document.getElementById('categoria').value = '';
+                obtenerProductos();
+            } else {
+                const errorData = await response.json();
+                mensajeDiv.textContent = `Error (${response.status}): ${errorData.detail || 'Fallo de API.'}`;
+            }
+        } catch (error) {
+            console.error('Error de red al crear producto:', error);
+            mensajeDiv.textContent = 'Error de conexión con el servidor.';
+        }
+    }
+
+    async function eliminarProducto(id) {
+        try {
+            const response = await fetch(`${API_URL}${id}`, { method: 'DELETE' });
+            if (response.status === 204) obtenerProductos();
+            else console.error('Error al eliminar:', response.status);
+        } catch (error) {
+            console.error('Error de red al eliminar producto:', error);
+        }
+    }
+
+    document.getElementById('busqueda').addEventListener('input', function() {
+        const filtro = this.value.toLowerCase();
+        const filas = document.querySelectorAll('#productos-cuerpo tr');
+        filas.forEach(fila => {
+            const celdas = fila.querySelectorAll('td');
+            const texto = celdas[0].textContent.toLowerCase() +
+                          celdas[1].textContent.toLowerCase() +
+                          celdas[2].textContent.toLowerCase() +
+                          celdas[3].textContent.toLowerCase();
+            fila.style.display = texto.includes(filtro) ? '' : 'none';
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', obtenerProductos);
+</script>
+
+</body>
+</html>
